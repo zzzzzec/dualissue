@@ -14,7 +14,7 @@ module id_stage(
     input wire                          inst1_mem2id_mreg,
     input wire                          inst1_wreg_i,
     input wire[`REG_ADDR_BUS]           inst1_wa_i,
-    input wire[`WORD_BUS    ]           inst1_wd_i,
+    input wire[`WORD_BUS    ]           inst1_w2regdata_i,
     input wire[`REG_BUS     ]           inst1_exe2id_wd,     //exe?��?������
     input wire[`REG_BUS     ]           inst1_mem2id_wd,    //mem?��?������
 
@@ -28,7 +28,7 @@ module id_stage(
     input wire                          inst2_mem2id_mreg,
     input wire                          inst2_wreg_i,
     input wire[`REG_ADDR_BUS]           inst2_wa_i,
-    input wire[`WORD_BUS    ]           inst2_wd_i,
+    input wire[`WORD_BUS    ]           inst2_w2regdata_i,
     input wire[`REG_BUS     ]           inst2_exe2id_wd,     //exe?��?������
     input wire[`REG_BUS     ]           inst2_mem2id_wd,    //mem?��?������
 
@@ -147,7 +147,7 @@ module id_stage(
         .resetn                 (resetn                 ),
         .inst1_we               (inst1_wreg_i           ),
         .inst1_wa               (inst1_wa_i             ),
-        .inst1_wd               (inst1_wd_i             ),  
+        .inst1_wd               (inst1_w2regdata_i             ),  
         .inst1_re1              (inst1_DCU_rreg1        ),
         .inst1_re2              (inst1_DCU_rreg2        ), 
         .inst1_ra1              (rs1                    ),
@@ -157,7 +157,7 @@ module id_stage(
 
         .inst2_we               (inst2_wreg_i           ),
         .inst2_wa               (inst2_wa_i             ),
-        .inst2_wd               (inst2_wd_i             ),  
+        .inst2_wd               (inst2_w2regdata_i             ),  
         .inst2_re1              (inst2_DCU_rreg1        ),
         .inst2_re2              (inst2_DCU_rreg2        ), 
         .inst2_ra1              (rs2                    ),
@@ -214,7 +214,7 @@ module id_stage(
     wire [`EXC_CODE_BUS] id_exccode_tmp;
 */
 
-    DCU DCU0(
+    DCU DCU1(
         .resetn          (resetn          ),
         .exe2id_wa          (exe2id_wa          ),
         .exe2id_wreg        (exe2id_wreg        ),
@@ -256,7 +256,7 @@ module id_stage(
 	);
 
 
-    DCU DCU1(
+    DCU DCU2(
         .resetn             (resetn          ),
         .exe2id_wa          (       ),
         .exe2id_wreg        (       ),

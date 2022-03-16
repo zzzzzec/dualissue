@@ -3,19 +3,20 @@
 module exe_stage (
     input wire                      clk,
     input wire                      resetn,
-    input wire [7:0]                memtype_i,
-    input wire                      mreg_i,
-    input wire [1:0]                whilo_i,
-    input wire 					    wreg_i,
-    input wire [`ALUTYPE_BUS	] 	alutype_i,
-    input wire [`ALUOP_BUS	    ] 	aluop_i,
-    input wire [`REG_ADDR_BUS 	] 	wa_i,
-    input wire [`REG_BUS 		] 	src1_i,
-    input wire [`REG_BUS 		] 	src2_i,
-    input wire [`REG_BUS        ]   din_i,
-    input wire [`REG_BUS        ]   pcPlus8,
+
+    input wire [`ALUTYPE_BUS	] 	inst1_alutype_i,
+    input wire [`ALUOP_BUS	    ] 	inst1_aluop_i,
+    input wire [`REG_BUS 		] 	inst1_src1_i,
+    input wire [`REG_BUS 		] 	inst1_src2_i,
+    input wire [`REG_BUS        ]   iaddr1_p8,
+    
     input wire                      ov_enable,
-    input wire [`EXC_CODE_BUS   ]   id_exccode,   
+    input wire [`EXC_CODE_BUS   ]   id_exccode,
+
+    input wire [`ALUTYPE_BUS	] 	inst2_alutype_i,
+    input wire [`ALUOP_BUS	    ] 	inst2_aluop_i,
+    input wire [`REG_BUS 		] 	inst2_src1_i,
+    input wire [`REG_BUS 		] 	inst2_src2_i,   
 // HILO FWARD
     input wire [`DOUBLE_WORD_BUS]   hilo, 
     input wire [1:0]                mem2exe_whilo,
@@ -38,38 +39,71 @@ module exe_stage (
     input wire[`REG_ADDR_BUS    ]   wb2exe_cp0addr,
     input wire[`WORD_BUS        ]   wb2exe_cp0wdata,                    
 
-    output wire [7:0]               memtype_o,
+
+    output reg  [`WORD_BUS      ]   ALU_inst1_result,
+    output reg  [`WORD_BUS      ]   ALU_inst2_result,
+
     output wire                     stallreq_exe_o,
-    output wire                     mreg_o,
-    output wire [1:0]               whilo_o,
-    output wire                     wreg_o,
     output wire [`ALUOP_BUS	    ] 	aluop_o,
-    output wire [`REG_ADDR_BUS 	] 	wa_o,
     output wire [`DOUBLE_WORD_BUS]  mulres_o,
-    output reg  [`WORD_BUS      ]   alu_result_o,
-    output wire [`REG_BUS       ]   din_o,
-    output wire [`EXC_CODE_BUS  ]   exe_exccode
+    output wire [`EXC_CODE_BUS  ]   exe_exccode,
+
+    // not use, fall through 
+    input wire [7:0]                inst1_memtype_i,
+    input wire                      inst1_mreg_i,
+    input wire [1:0]                inst1_whilo_i,
+    input wire 					    inst1_wreg_i,
+    input wire [`REG_ADDR_BUS 	] 	inst1_wa_i,
+    input wire [`REG_BUS        ]   inst1_din_i,
+    input wire [7:0]                inst2_memtype_i,
+    input wire                      inst2_mreg_i,
+    input wire [1:0]                inst2_whilo_i,
+    input wire 					    inst2_wreg_i,
+    input wire [`REG_ADDR_BUS 	] 	inst2_wa_i,
+    input wire [`REG_BUS        ]   inst2_din_i,
+
+    output wire [7:0]               inst1_memtype_o,
+    output wire                     inst1_mreg_o,
+    output wire [1:0]               inst1_whilo_o,
+    output wire                     inst1_wreg_o,
+    output wire [`REG_ADDR_BUS 	] 	inst1_wa_o,
+    output wire [`REG_BUS       ]   inst1_din_o,
+    output wire [7:0]               inst2_memtype_o,
+    output wire                     inst2_mreg_o,
+    output wire [1:0]               inst2_whilo_o,
+    output wire                     inst2_wreg_o,
+    output wire [`REG_ADDR_BUS 	] 	inst2_wa_o,
+    output wire [`REG_BUS       ]   inst2_din_o
     );
-/*===================================*/
-/*                         ALU����ź�                                          */
-    wire [`WORD_BUS]    ALU_logicres;
-    wire [`WORD_BUS]    ALU_arithres;
-    wire [`WORD_BUS]    ALU_shiftres;
-/*===================================*/
+
+    wire [`WORD_BUS]    ALU_inst1_logicres;
+    wire [`WORD_BUS]    ALU_inst1_arithres;
+    wire [`WORD_BUS]    ALU_inst1_shiftres;
+    wire [`WORD_BUS]    ALU_inst2_logicres;
+    wire [`WORD_BUS]    ALU_inst2_arithres;
+    wire [`WORD_BUS]    ALU_inst2_shiftres;
+
     wire [`REG_BUS]     hilo_out;
     wire [`WORD_BUS]    cp0_rdata;
     wire                ov;
 
-    assign memtype_o = memtype_i;
-    assign mreg_o = mreg_i;
-    assign whilo_o = whilo_i;
-    assign wreg_o = wreg_i;
-    assign aluop_o = aluop_i;
-    assign wa_o  = wa_i;
-    assign din_o = din_i;
+    assign inst1_memtype_o  = inst1_memtype_i;
+    assign inst1_mreg_o     = inst1_mreg_i;
+    assign inst1_whilo_o    = inst1_whilo_i;
+    assign inst1_wreg_o     = inst1_wreg_i;
+    assign inst1_aluop_o    = inst1_aluop_i;
+    assign inst1_wa_o       = inst1_wa_i;
+    assign inst1_din_o      = inst1_din_i;
+    assign inst2_memtype_o  = inst2_memtype_i;
+    assign inst2_mreg_o     = inst2_mreg_i;
+    assign inst2_whilo_o    = inst2_whilo_i;
+    assign inst2_wreg_o     = inst2_wreg_i;
+    assign inst2_aluop_o    = inst2_aluop_i;
+    assign inst2_wa_o       = inst2_wa_i;
+    assign inst2_din_o      = inst2_din_i;
 
     HILOFward HILOFward0(
-        .moveres           (aluop_i[7]        ),
+        .moveres           (inst1_aluop_i[7]  ),
         .hi                (hilo[63:32]       ),
         .lo                (hilo[31:0]        ),
         .mem2exe_whilo     (mem2exe_whilo     ),
@@ -96,43 +130,85 @@ module exe_stage (
     );
     
 
-   ALU ALU0(
-        .clk        (clk    ),
-        .resetn          (resetn      ),
-        .aluop              (aluop_i        ),
-        .src1               (src1_i         ),
-        .src2               (src2_i         ),
+   ALU ALU1(
+        .clk                (clk            ),
+        .resetn             (resetn         ),
+        .aluop              (inst1_aluop_i  ),
+        .src1               (inst1_src1_i   ),
+        .src2               (inst1_src2_i   ),
         .ov_enable          (ov_enable      ),
 
         .ov                 (ov             ),
         .stallreq_exe       (stallreq_exe_o ),
-        .logicres           (ALU_logicres   ),
-        .shiftres           (ALU_shiftres   ),
-        .arithres           (ALU_arithres   ),
+        .logicres           (ALU_inst1_logicres   ),
+        .shiftres           (ALU_inst1_shiftres   ),
+        .arithres           (ALU_inst1_arithres   ),
         .muldiv_res         (mulres_o       )
     );
 
+   ALU ALU2(
+        .clk                (clk            ),
+        .resetn             (resetn         ),
+        .aluop              (inst2_aluop_i  ),
+        .src1               (inst2_src1_i   ),
+        .src2               (inst2_src2_i   ),
+        .ov_enable          (ov_enable      ),
+
+        .ov                 (ov             ),
+        .stallreq_exe       (stallreq_exe_o ),
+        .logicres           (ALU_inst2_logicres   ),
+        .shiftres           (ALU_inst2_shiftres   ),
+        .arithres           (ALU_inst2_arithres   ),
+        .muldiv_res         (mulres_o       )
+    );
+
+
     always @(*) begin
-        case (alutype_i)
+        case (inst1_alutype_i)
         `LOGIC: begin
-           alu_result_o = ALU_logicres;
+           ALU_inst1_result = ALU_inst1_logicres;
         end 
         `ARITH: begin
-           alu_result_o = ALU_arithres;
+           ALU_inst1_result = ALU_inst1_arithres;
         end
         `SHIFT: begin
-           alu_result_o = ALU_shiftres;
+           ALU_inst1_result = ALU_inst1_shiftres;
         end
         `MOVE: begin
-            alu_result_o = (cp0_re)? cp0_rdata : hilo_out;
+            ALU_inst1_result = (cp0_re)? cp0_rdata : hilo_out;
         end
         `JUMP:begin
-            alu_result_o = pcPlus8; 
+            ALU_inst1_result = iaddr1_p8; 
         end
         default: begin
-            alu_result_o = `ZERO_WORD;
+            ALU_inst1_result = `ZERO_WORD;
         end
         endcase
     end
+
+    always @(*) begin
+        case (inst2_alutype_i)
+        `LOGIC: begin
+           ALU_inst2_result = ALU_inst2_logicres;
+        end 
+        `ARITH: begin
+           ALU_inst2_result = ALU_inst2_arithres;
+        end
+        `SHIFT: begin
+           ALU_inst2_result = ALU_inst2_shiftres;
+        end
+        `MOVE: begin
+            ALU_inst2_result = 0;
+        end
+        `JUMP:begin
+            ALU_inst2_result = 0;
+        end
+        default: begin
+            ALU_inst2_result = `ZERO_WORD;
+        end
+        endcase
+    end
+
+
 assign exe_exccode = (ov)? `EXC_OV : id_exccode;
 endmodule
