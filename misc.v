@@ -17,7 +17,6 @@ module EXT(
         end
    end  
     assign shift_result = imm << 16;
-    // 0-> ʹ����չ  1-> LUIָ����ظ�λ
   always @(*)   begin
         result = (upper == 1)? shift_result : ext_result;
   end   

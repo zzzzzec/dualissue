@@ -13,8 +13,8 @@ module exemem_reg (
     input wire                      exe_inst1_wreg,
     input wire [`ALUOP_BUS      ]   exe_inst1_aluop,
     input wire [`REG_ADDR_BUS   ]   exe_inst1_wa,
-    input wire [`REG_BUS 	    ]   exe_inst1_wd,
-    input wire [`REG_BUS        ]   exe_inst1_din,
+    input wire [`REG_BUS 	    ]   exe_inst1_w2regdata,
+    input wire [`REG_BUS        ]   exe_inst1_w2ramdata,
     input wire [`INST_BUS       ]   exe_iaddr1,
 
     input wire[7:0]                 exe_inst2_memtype,
@@ -23,8 +23,8 @@ module exemem_reg (
     input wire                      exe_inst2_wreg,
     input wire [`ALUOP_BUS      ]   exe_inst2_aluop,
     input wire [`REG_ADDR_BUS   ]   exe_inst2_wa,
-    input wire [`REG_BUS 	    ]   exe_inst2_wd,
-    input wire [`REG_BUS        ]   exe_inst2_din,
+    input wire [`REG_BUS 	    ]   exe_inst2_w2regdata,
+    input wire [`REG_BUS        ]   exe_inst2_w2ramdata,
     input wire [`INST_BUS       ]   exe_iaddr2,
 
     input wire [`DOUBLE_WORD_BUS]   exe_mulres,
@@ -41,8 +41,8 @@ module exemem_reg (
     output reg                      mem_inst1_wreg,
     output reg [`ALUOP_BUS      ]   mem_inst1_aluop,
     output reg [`REG_ADDR_BUS   ]   mem_inst1_wa,
-    output reg [`REG_BUS 	    ]   mem_inst1_wd,
-    output reg [`REG_BUS        ]   mem_inst1_din,
+    output reg [`REG_BUS 	    ]   mem_inst1_w2regdata,
+    output reg [`REG_BUS        ]   mem_inst1_w2ramdata,
     output reg [`INST_BUS       ]   mem_iaddr1,
 
     output reg [7:0]                mem_inst2_memtype,
@@ -51,8 +51,8 @@ module exemem_reg (
     output reg                      mem_inst2_wreg,
     output reg [`ALUOP_BUS      ]   mem_inst2_aluop,
     output reg [`REG_ADDR_BUS   ]   mem_inst2_wa,
-    output reg [`REG_BUS 	    ]   mem_inst2_wd,
-    output reg [`REG_BUS        ]   mem_inst2_din,
+    output reg [`REG_BUS 	    ]   mem_inst2_w2regdata,
+    output reg [`REG_BUS        ]   mem_inst2_w2ramdata,
     output reg [`INST_BUS       ]   mem_iaddr2,
 
 
@@ -75,8 +75,8 @@ module exemem_reg (
         mem_inst1_wreg   		    <= `WRITE_DISABLE;
         mem_inst1_aluop           <= `MINIMIPS32_SLL;
         mem_inst1_wa 			    <= `REG_NOP;
-        mem_inst1_wd   		    <= `ZERO_WORD;
-        mem_inst1_din             <= `ZERO_WORD;
+        mem_inst1_w2regdata   		    <= `ZERO_WORD;
+        mem_inst1_w2ramdata             <= `ZERO_WORD;
         mem_iaddr1              <= `ZERO_WORD;
 
         mem_inst2_memtype         <= 8'b0000_0000;
@@ -85,8 +85,8 @@ module exemem_reg (
         mem_inst2_wreg   		    <= `WRITE_DISABLE;
         mem_inst2_aluop           <= `MINIMIPS32_SLL;
         mem_inst2_wa 			    <= `REG_NOP;
-        mem_inst2_wd   		    <= `ZERO_WORD;
-        mem_inst2_din             <= `ZERO_WORD;
+        mem_inst2_w2regdata   		    <= `ZERO_WORD;
+        mem_inst2_w2ramdata             <= `ZERO_WORD;
         mem_iaddr2              <= `ZERO_WORD;
 
         mem_mulres          <= `ZERO_DWORD;
@@ -103,8 +103,8 @@ module exemem_reg (
         mem_inst1_wreg 			    <= exe_inst1_wreg;
         mem_inst1_aluop             <= exe_inst1_aluop;
         mem_inst1_wa 				<= exe_inst1_wa;
-        mem_inst1_wd 		    	<= exe_inst1_wd;
-        mem_inst1_din               <= exe_inst1_din;
+        mem_inst1_w2regdata 		    	<= exe_inst1_w2regdata;
+        mem_inst1_w2ramdata               <= exe_inst1_w2ramdata;
         mem_inst1_memtype           <= exe_inst1_memtype;
         mem_iaddr1                  <= exe_iaddr1;
         mem_inst2_mreg              <= exe_inst2_mreg;
@@ -112,8 +112,8 @@ module exemem_reg (
         mem_inst2_wreg 			    <= exe_inst2_wreg;
         mem_inst2_aluop             <= exe_inst2_aluop;
         mem_inst2_wa 				<= exe_inst2_wa;
-        mem_inst2_wd 		    	<= exe_inst2_wd;
-        mem_inst2_din               <= exe_inst2_din;
+        mem_inst2_w2regdata 		    	<= exe_inst2_w2regdata;
+        mem_inst2_w2ramdata               <= exe_inst2_w2ramdata;
         mem_inst2_memtype           <= exe_inst2_memtype;
         mem_iaddr2                  <= exe_iaddr2;
 

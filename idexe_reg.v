@@ -13,7 +13,7 @@ module idexe_reg (
     input wire [`REG_BUS      ]     id_inst1_src1,
     input wire [`REG_BUS      ]     id_inst1_src2,
     input wire [`REG_ADDR_BUS ]     id_inst1_wa,    
-    input wire [`REG_BUS      ]     id_inst1_din,
+    input wire [`REG_BUS      ]     id_inst1_w2ramdata,
     input wire [`INST_BUS     ]     id_iaddr1,
     input wire [`REG_BUS      ]     id_iaddr1_p8,
 
@@ -26,7 +26,7 @@ module idexe_reg (
     input wire [`REG_BUS      ]     id_inst2_src1,
     input wire [`REG_BUS      ]     id_inst2_src2,
     input wire [`REG_ADDR_BUS ]     id_inst2_wa,    
-    input wire [`REG_BUS      ]     id_inst2_din,
+    input wire [`REG_BUS      ]     id_inst2_w2ramdata,
     input wire [`INST_BUS     ]     id_iaddr2,
     input wire [`REG_BUS      ]     id_iaddr2_p8,
 
@@ -51,7 +51,7 @@ module idexe_reg (
     output reg  [`REG_ADDR_BUS ]    exe_inst1_wa,
     output reg  [`REG_BUS      ]    exe_inst1_src1,
     output reg  [`REG_BUS      ]    exe_inst1_src2,
-    output reg  [`REG_BUS      ]    exe_inst1_din,
+    output reg  [`REG_BUS      ]    exe_inst1_w2ramdata,
     output reg  [`INST_BUS     ]    exe_iaddr1,
     output reg  [`REG_BUS      ]    exe_iaddr1_p8,
 
@@ -64,7 +64,7 @@ module idexe_reg (
     output reg  [`REG_ADDR_BUS ]    exe_inst2_wa,
     output reg  [`REG_BUS      ]    exe_inst2_src1,
     output reg  [`REG_BUS      ]    exe_inst2_src2,
-    output reg  [`REG_BUS      ]    exe_inst2_din,
+    output reg  [`REG_BUS      ]    exe_inst2_w2ramdata,
     output reg  [`INST_BUS     ]    exe_iaddr2,
     output reg  [`REG_BUS      ]    exe_iaddr2_p8,
 
@@ -94,7 +94,7 @@ module idexe_reg (
             exe_inst1_wa 			<=  `REG_NOP;
             exe_inst1_src1 		    <=  `ZERO_WORD;
             exe_inst1_src2 		    <=  `ZERO_WORD;
-            exe_inst1_din           <=  `ZERO_WORD;
+            exe_inst1_w2ramdata           <=  `ZERO_WORD;
             exe_inst1_memtype       <=  8'b0000_0000;
             exe_iaddr1              <=  `ZERO_WORD;
             exe_iaddr1_p8           <=  `ZERO_WORD;
@@ -115,46 +115,46 @@ module idexe_reg (
             exe_inst2_wa 			<=  `REG_NOP;
             exe_inst2_src1 		    <=  `ZERO_WORD;
             exe_inst2_src2 		    <=  `ZERO_WORD;
-            exe_inst2_din           <=  `ZERO_WORD;
+            exe_inst2_w2ramdata           <=  `ZERO_WORD;
             exe_inst2_memtype       <=  8'b0000_0000;
             exe_iaddr2              <=  `ZERO_WORD;
             exe_iaddr2_p8           <=  `ZERO_WORD;
         end
 
         else if(stall[2] == `PIPELINE_NOSTOP)begin
-            exe_inst1_mreg        <= id_inst1_mreg;
-            exe_inst1_whilo       <= id_inst1_whilo;
-            exe_inst1_wreg        <= id_inst1_wreg;
-            exe_inst1_alutype     <= id_inst1_alutype;
-            exe_inst1_aluop       <= id_inst1_aluop;
-            exe_inst1_wa          <= id_inst1_wa;
-            exe_inst1_src1        <= id_inst1_src1;
-            exe_inst1_src2        <= id_inst1_src2;
-            exe_inst1_din         <= id_inst1_din;
-            exe_inst1_memtype     <= id_inst1_memtype;
+            exe_inst1_mreg          <= id_inst1_mreg;
+            exe_inst1_whilo         <= id_inst1_whilo;
+            exe_inst1_wreg          <= id_inst1_wreg;
+            exe_inst1_alutype       <= id_inst1_alutype;
+            exe_inst1_aluop         <= id_inst1_aluop;
+            exe_inst1_wa            <= id_inst1_wa;
+            exe_inst1_src1          <= id_inst1_src1;
+            exe_inst1_src2          <= id_inst1_src2;
+            exe_inst1_w2ramdata     <= id_inst1_w2ramdata;
+            exe_inst1_memtype       <= id_inst1_memtype;
 
-            exe_iaddr1               <= id_iaddr1;
-            exe_iaddr1_p8     <= id_iaddr1_p8;
-            exe_is_mthilo   <= id_is_mthilo;
-            exe_rwc0        <= id_rwc0;
-            exe_cp0addr     <= id_cp0addr;
-            exe_ov_enable   <= id_ov_enable;
-            exe_id_exccode  <= id_id_exccode;
-            exe_next_delay  <= id_next_delay;
-            exe_id_in_delay <= loop_id_in_delay;
+            exe_iaddr1              <= id_iaddr1;
+            exe_iaddr1_p8           <= id_iaddr1_p8;
+            exe_is_mthilo           <= id_is_mthilo;
+            exe_rwc0                <= id_rwc0;
+            exe_cp0addr             <= id_cp0addr;
+            exe_ov_enable           <= id_ov_enable;
+            exe_id_exccode          <= id_id_exccode;
+            exe_next_delay          <= id_next_delay;
+            exe_id_in_delay         <= loop_id_in_delay;
 
-            exe_iaddr2            <= id_iaddr2;
-            exe_iaddr2_p8         <= id_iaddr2_p8;
-            exe_inst2_mreg        <= id_inst2_mreg;
-            exe_inst2_whilo       <= id_inst2_whilo;
-            exe_inst2_wreg        <= id_inst2_wreg;
-            exe_inst2_alutype     <= id_inst2_alutype;
-            exe_inst2_aluop       <= id_inst2_aluop;
-            exe_inst2_wa          <= id_inst2_wa;
-            exe_inst2_src1        <= id_inst2_src1;
-            exe_inst2_src2        <= id_inst2_src2;
-            exe_inst2_din         <= id_inst2_din;
-            exe_inst2_memtype     <= id_inst2_memtype;
+            exe_iaddr2              <= id_iaddr2;
+            exe_iaddr2_p8           <= id_iaddr2_p8;
+            exe_inst2_mreg          <= id_inst2_mreg;
+            exe_inst2_whilo         <= id_inst2_whilo;
+            exe_inst2_wreg          <= id_inst2_wreg;
+            exe_inst2_alutype       <= id_inst2_alutype;
+            exe_inst2_aluop         <= id_inst2_aluop;
+            exe_inst2_wa            <= id_inst2_wa;
+            exe_inst2_src1          <= id_inst2_src1;
+            exe_inst2_src2          <= id_inst2_src2;
+            exe_inst2_w2ramdata     <= id_inst2_w2ramdata;
+            exe_inst2_memtype       <= id_inst2_memtype;
         end
     end
 

@@ -274,12 +274,13 @@ DCU_step2 DCU_step20(
 	.RI 		(RI				)
 	);
 	//读寄存器端口1可能的数据来源
-	assign fwrd1 = (exe2id_wreg == `WRITE_ENABLE  && exe2id_wa == rs && rreg1 == `READ_ENABLE  && exe2id_wa != 0 ) ? 2'b01:
-							 (mem2id_wreg == `WRITE_ENABLE  && mem2id_wa == rs && rreg1 == `READ_ENABLE && mem2id_wa != 0 ) ? 2'b10:
-							 (rreg1 == `READ_ENABLE) ?  2'b 11 : 2'b00;   
-	assign fwrd2 = (exe2id_wreg == `WRITE_ENABLE  && exe2id_wa == rt && rreg2 == `READ_ENABLE && exe2id_wa != 0 ) ? 2'b01:
-							 (mem2id_wreg == `WRITE_ENABLE  && mem2id_wa == rt && rreg2 == `READ_ENABLE && mem2id_wa != 0 ) ? 2'b10:
-							 (rreg2 == `READ_ENABLE) ?  2'b 11 : 2'b00;   
+	assign fwrd1 = 	(exe2id_wreg == `WRITE_ENABLE  && exe2id_wa == rs && rreg1 == `READ_ENABLE  && exe2id_wa != 0 	) ? 2'b01:
+					(mem2id_wreg == `WRITE_ENABLE  && mem2id_wa == rs && rreg1 == `READ_ENABLE && mem2id_wa != 0 	) ? 2'b10:
+					(rreg1 == `READ_ENABLE) ?  2'b11 : 2'b00;   
+
+	assign fwrd2 = 	(exe2id_wreg == `WRITE_ENABLE  	&& exe2id_wa == rt && rreg2 == `READ_ENABLE && exe2id_wa != 0 ) ? 2'b01:
+					(mem2id_wreg == `WRITE_ENABLE  	&& mem2id_wa == rt && rreg2 == `READ_ENABLE && mem2id_wa != 0 ) ? 2'b10:
+					(rreg2 == `READ_ENABLE) ?  2'b11 : 2'b00;   
 
 	assign stallreq_id = (resetn == `RST_ENABLE) ?  `PIPELINE_NOSTOP :
 									 (`SRC1_EXE_RELATIVE || `SRC1_MEM_RELATIVE || `SRC2_EXE_RELATIVE || `SRC2_MEM_RELATIVE) ? 

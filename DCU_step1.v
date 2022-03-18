@@ -135,56 +135,11 @@ assign inst_bgtz = (~op[5]) & (~op[4]) & (~op[3]) & (op[2])  & (op[1])  & (op[0]
 assign inst_blez = (~op[5]) & (~op[4]) & (~op[3]) & (op[2])  & (op[1])  & (~op[0]);	
 
 assign inst_bgez_group  = (~op[5]) & (~op[4]) & (~op[3]) & (~op[2]) & (~op[1]) & (op[0]);	
-//TDOD: 重构这里，不要出现 RTL rom / latch / reg
+
 assign inst_bgez = inst_bgez_group & ((~rt[4]) & (~rt[3]) & (~rt[2]) & (~rt[1]) & (rt[0]));
 assign inst_bltz = inst_bgez_group & ((~rt[4]) & (~rt[3]) & (~rt[2]) & (~rt[1]) & (~rt[0]));
 assign inst_bgezal = inst_bgez_group & ((rt[4]) & (~rt[3]) & (~rt[2]) & (~rt[1]) & (rt[0]));
 assign inst_bltzal = inst_bgez_group & ((rt[4]) & (~rt[3]) & (~rt[2]) & (~rt[1]) & (~rt[0]));
-
-/*
-always @(*) begin
-if(inst_bgez_group) begin
-	case(rt)
-		5'b00001:begin		   //BGEZ
-			inst_bgez = 1'b1;
-			inst_bltz = 1'b0;
-			inst_bgezal = 1'b0;
-			inst_bltzal = 1'b0;
-		end
-		5'b00000:begin         //BLTZ
-			inst_bgez = 1'b0;
-			inst_bltz = 1'b1;
-			inst_bgezal = 1'b0;
-			inst_bltzal = 1'b0;
-		end
-		5'b10001:begin        //BGEZAL
-			inst_bgez = 1'b0;
-			inst_bltz = 1'b0;
-			inst_bgezal = 1'b1;
-			inst_bltzal = 1'b0;
-		end
-		5'b10000:begin         //BLTZAL
-			inst_bgez = 1'b0;
-			inst_bltz = 1'b0;
-			inst_bgezal = 1'b0;
-			inst_bltzal = 1'b1;
-		end
-		default:begin
-			inst_bgez = 1'b0;
-			inst_bltz = 1'b0;
-			inst_bgezal = 1'b0;
-			inst_bltzal = 1'b0;
-		end
-	endcase
-end
-	else begin
-		inst_bgez = 1'b0;
-		inst_bltz = 1'b0;
-		inst_bgezal = 1'b0;
-		inst_bltzal = 1'b0;
-	end
-end
-*/
 
 assign inst_mtc0_group = (~op[5]) & (op[4]) & (~op[3]) & (~op[2]) & (~op[1]) & (~op[0]);
 assign inst_eret = inst_mtc0_group & rs[4];

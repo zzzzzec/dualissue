@@ -54,26 +54,26 @@ module exe_stage (
     input wire [1:0]                inst1_whilo_i,
     input wire 					    inst1_wreg_i,
     input wire [`REG_ADDR_BUS 	] 	inst1_wa_i,
-    input wire [`REG_BUS        ]   inst1_din_i,
+    input wire [`REG_BUS        ]   inst1_w2ramdata_i,
     input wire [7:0]                inst2_memtype_i,
     input wire                      inst2_mreg_i,
     input wire [1:0]                inst2_whilo_i,
     input wire 					    inst2_wreg_i,
     input wire [`REG_ADDR_BUS 	] 	inst2_wa_i,
-    input wire [`REG_BUS        ]   inst2_din_i,
+    input wire [`REG_BUS        ]   inst2_w2ramdata_i,
 
     output wire [7:0]               inst1_memtype_o,
     output wire                     inst1_mreg_o,
     output wire [1:0]               inst1_whilo_o,
     output wire                     inst1_wreg_o,
     output wire [`REG_ADDR_BUS 	] 	inst1_wa_o,
-    output wire [`REG_BUS       ]   inst1_din_o,
+    output wire [`REG_BUS       ]   inst1_w2ramdata_o,
     output wire [7:0]               inst2_memtype_o,
     output wire                     inst2_mreg_o,
     output wire [1:0]               inst2_whilo_o,
     output wire                     inst2_wreg_o,
     output wire [`REG_ADDR_BUS 	] 	inst2_wa_o,
-    output wire [`REG_BUS       ]   inst2_din_o
+    output wire [`REG_BUS       ]   inst2_w2ramdata_o
     );
 
     wire [`WORD_BUS]    ALU_inst1_logicres;
@@ -93,14 +93,14 @@ module exe_stage (
     assign inst1_wreg_o     = inst1_wreg_i;
     assign inst1_aluop_o    = inst1_aluop_i;
     assign inst1_wa_o       = inst1_wa_i;
-    assign inst1_din_o      = inst1_din_i;
+    assign inst1_w2ramdata_o      = inst1_w2ramdata_i;
     assign inst2_memtype_o  = inst2_memtype_i;
     assign inst2_mreg_o     = inst2_mreg_i;
     assign inst2_whilo_o    = inst2_whilo_i;
     assign inst2_wreg_o     = inst2_wreg_i;
     assign inst2_aluop_o    = inst2_aluop_i;
     assign inst2_wa_o       = inst2_wa_i;
-    assign inst2_din_o      = inst2_din_i;
+    assign inst2_w2ramdata_o      = inst2_w2ramdata_i;
 
     HILOFward HILOFward0(
         .moveres           (inst1_aluop_i[7]  ),
