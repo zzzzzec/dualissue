@@ -1,33 +1,33 @@
 `timescale 1ns / 1ps
 
 /*------------------- ȫ�ֲ��� -------------------*/
-`define RST_ENABLE      1'b0                // ��λ�ź���Ч  RST_ENABLE
-`define RST_DISABLE     1'b1                // ��λ�ź���Ч
-`define ZERO_WORD       32'h00000000        // 32λ����ֵ0
-`define ZERO_DWORD      64'b0               // 64λ����ֵ0
-`define WRITE_ENABLE    1'b1                // ʹ��д
-`define WRITE_DISABLE   1'b0                // ��ֹд
-`define READ_ENABLE     1'b1                // ʹ�ܶ�
-`define READ_DISABLE    1'b0                // ��ֹ��
-`define ALUOP_BUS       7 : 0               // ����׶ε����aluop_o�Ŀ���
-`define SHIFT_ENABLE    1'b1                // ��λָ��ʹ�� 
-`define ALUTYPE_BUS     2 : 0               // ����׶ε����alutype_o�Ŀ���  
-`define TRUE_V          1'b1                // �߼�"��"  
-`define FALSE_V         1'b0                // �߼�"��"  
-`define CHIP_ENABLE     1'b1                // оƬʹ��  
-`define CHIP_DISABLE    1'b0                // оƬ��ֹ  
-`define WORD_BUS        31: 0               // 32λ��
-`define DOUBLE_REG_BUS  63: 0               // ������ͨ�üĴ����������߿���
-`define RT_ENABLE       1'b1                // rtѡ��ʹ��
-`define SIGNED_EXT      1'b1                // ������չʹ��
-`define IMM_ENABLE      1'b1                // ������ѡ��ʹ��
-`define UPPER_ENABLE    1'b1                // ��������λʹ��
-`define MREG_ENABLE     1'b1                // д�ؽ׶δ洢�����ѡ���ź�??
-`define BSEL_BUS        3 : 0               // ���ݴ洢���ֽ�ѡ���źſ���
-//`define PC_INIT         32'hBFC00000        // PC��ʼֵ
-`define PC_INIT         32'hBFBF_FFFC       // PC��ʼֵ  -4shimasu
+`define RST_ENABLE      1'b0                
+`define RST_DISABLE     1'b1                
+`define ZERO_WORD       32'h00000000        
+`define ZERO_DWORD      64'b0               
+`define WRITE_ENABLE    1'b1                
+`define WRITE_DISABLE   1'b0                
+`define READ_ENABLE     1'b1                
+`define READ_DISABLE    1'b0                
+`define ALUOP_BUS       7 : 0               
+`define SHIFT_ENABLE    1'b1                
+`define ALUTYPE_BUS     2 : 0               
+`define TRUE_V          1'b1                
+`define FALSE_V         1'b0                
+`define CHIP_ENABLE     1'b1                
+`define CHIP_DISABLE    1'b0                
+`define WORD_BUS        31: 0               
+`define DOUBLE_REG_BUS  63: 0               
+`define RT_ENABLE       1'b1                
+`define SIGNED_EXT      1'b1                
+`define IMM_ENABLE      1'b1                
+`define UPPER_ENABLE    1'b1                
+`define MREG_ENABLE     1'b1                
+`define BSEL_BUS        3 : 0               
+//`define PC_INIT         32'hBFC00000        
+`define PC_INIT         32'hBFBF_FFFC       
 //`define PC_INIT              32'h00000000
-//`define PC_INIT                 32'hffff_fffc       //��ֹ������һ��ָ��
+//`define PC_INIT                 32'hffff_fffc       
 `define DOUBLE_WORD_BUS 63:0
 `define HALF_WORD_BUS   15:0
 `define INST_INDEX_BUS  25:0
@@ -36,10 +36,10 @@
 `define LOAD_ALU        1'b0
 
 `define ALU_INST_BUS    2:0
-/*------------------- ָ���ֲ��� -------------------*/
-`define INST_ADDR_BUS   31: 0               // ָ��ĵ�ַ����??
-`define INST_BUS        31: 0               // ָ������ݿ���??
-`define INST_INIT       32'h00000000     //ָ��ĳ�ʼ�?
+
+`define INST_ADDR_BUS   31: 0            
+`define INST_BUS        31: 0            
+`define INST_INIT       32'h00000000     
 
 
 
@@ -47,9 +47,11 @@
 `define INST_BUFFER_SIZE 8
 `define ISNT_BUFFER_SIZElog2 3
 
+`define INIT_ISSUE 2'b00
+`define DUAL_ISSUE 2'b11
+`define SINGLE_ISSUE 2'b10
 
 
-// ��������alutype
 `define NOP             3'b000
 `define ARITH           3'b001
 `define LOGIC           3'b010
@@ -88,8 +90,7 @@
 							inst_beq    |inst_bne   |inst_bgez |inst_bgtz   |\
 							inst_blez   |inst_bltz  |inst_bgezal |inst_bltzal |\
 							inst_mfc0   |inst_mtc0  |inst_syscall|inst_eret   |inst_break)
-//���¶���aluop  
-// alu ����ִ�еĲ�����  AND ��OR ��XOR ��NOR  �Ƚ�(SLT)(�з��ź��޷���)  �߼����� �߼����� �������� �˷������޷��ţ� ���������޷��ţ�
+
 `define ALUOP_NOR       8'b0000_0111
 `define ALUOP_AND       8'b0000_1011
 `define ALUOP_OR        8'b0000_1111
@@ -103,9 +104,9 @@
 `define ALUOP_UNSLT     8'b0000_1101
 `define ALUOP_SLT       8'b0001_0001
 
-`define ALUOP_SLL       8'b0000_0110 //�߼�����
-`define ALUOP_SRA       8'b0000_1010 //��������
-`define ALUOP_SRL       8'b0000_1110 //�߼�����
+`define ALUOP_SLL       8'b0000_0110 
+`define ALUOP_SRA       8'b0000_1010 
+`define ALUOP_SRL       8'b0000_1110 
 
 `define ALUOP_UNMUL     8'b0000_0100
 `define ALUOP_MUL       8'b0000_1000
@@ -116,16 +117,23 @@
 
 `define HALFWORD_NOT_ALIGN(daddr)       (daddr[0])
 `define WORD_NOT_ALIGN(daddr)           (daddr[1]|daddr[0])     
-/*------------------- ͨ�üĴ����Ѳ��� -------------------*/
-`define REG_BUS         31: 0               // �Ĵ������ݿ���
-`define REG_ADDR_BUS    4 : 0               // �Ĵ����ĵ�ַ����
-`define REG_NUM         32                  // �Ĵ�������32��
-`define REG_NOP         5'b00000            // ��żĴ���??
 
-/*----------------------��ͣ����---------------------------*/
+`define REG_BUS         31: 0               
+`define REG_ADDR_BUS    4 : 0               
+`define REG_NUM         32                  
+`define REG_NOP         5'b00000            
+
+
 `define STALL_BUS       3:0        
 `define PIPELINE_STOP   1'b1
 `define PIPELINE_NOSTOP 1'b0
+
+`define DUC_fwrd_BUS	   4:0
+`define DCU_fwrd_inst1_exe 5'b00001
+`define DCU_fwrd_inst2_exe 5'b00010
+`define DCU_fwrd_inst1_mem 5'b00100
+`define DCU_fwrd_inst2_mem 5'b01000
+`define DCU_fwrd_no 	   5'b10000
 
 /*---------------------CP0----------------------------------------*/
 `define CP0_ADDR_BUS 4:0
@@ -195,8 +203,7 @@
     `define CONVERSE_WRITEDATA
 `endif
 
-`define DUAL_ISSUE 1'b1
-`define SINGLE_ISSUE 1'b0
+
 
 
 //misc 

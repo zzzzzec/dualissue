@@ -29,6 +29,7 @@ module MiniMIPS32(
     wire [`INST_BUS]          if_pcplus4;
     wire [`INST_BUS]          if_pc;
     wire [`EXC_CODE_BUS]      if_pc_exccode;
+    wire                      if_ib_we;
  /*===================================
     wire [`INST_BUS]            ifid_inst_o;
 
@@ -90,6 +91,9 @@ module MiniMIPS32(
     wire                        id_ov_enable;
     wire [`EXC_CODE_BUS]        id_exccode;
     wire                        id_next_delay;
+
+    wire [1:0]                  id_issue_mode;
+    wire                        id_jmp_take;
 
 /*===========================       idexe              ========*/
 
@@ -267,12 +271,12 @@ module MiniMIPS32(
 	//assign debug_wb_rf_wen = (wb_wreg == 1)?{4'b1111}:{4'b0000};
 
     if_stage if_stage0(
-		.clk		        (clk    ),
-        .resetn			    (resetn      ),
-        .jtsel_i			(0),//(id_jtsel       ),
-        .jmp_addr1_i		(0),//(id_jmp_addr1_o ),
-        .jmp_addr2_i		(0),//(id_jmp_addr2_o ),
-        .jmp_addr3_i		(0),//(id_jmp_addr3_o ),
+		.clk		        (clk            ),
+        .resetn			    (resetn         ),
+        .jtsel_i			(id_jtsel       ),
+        .jmp_addr1_i		(id_jmp_addr1_o ),
+        .jmp_addr2_i		(id_jmp_addr2_o ),
+        .jmp_addr3_i		(id_jmp_addr3_o ),
         .stall				(0),//(SCU_stall      ),
         .flush              (0),//(cp0_flush      ),
         .cp0_excaddr        (0),//(cp0_excaddr    ),
@@ -280,10 +284,9 @@ module MiniMIPS32(
         .instBufferFull     (instBuffer_bufferFull),
 
         .ice				(ice            ),
-        .pc_plus4_o			(if_pcplus4     ),
         .iaddr				(iaddr          ),
-        .pc_o				(if_pc          ),
-        .pc_exccode         (if_pc_exccode  )
+        .pc_exccode         (if_pc_exccode  ),
+        .we                 (if_ib_we       )
      );
  
     //  ifid_reg ifid_reg0(
@@ -316,12 +319,13 @@ module MiniMIPS32(
     instBuffer instBuffer0(
         .clk                    (clk),
         .resetn                 (resetn),
-        .flush                  (0),
+        .flush                  (id_jmp_take),
         .inst_i                  (inst),
         .iaddr_i                 (wait_iaddr),
         
         .re                     (1),
-        .we                     (1),
+        .we                     (if_ib_we),
+        .issue_mode             (id_issue_mode),
 
         .inst1                  (instBuffer_inst1),
         .inst2                  (instBuffer_inst2),
@@ -358,44 +362,40 @@ module MiniMIPS32(
         .inst2_exe2id_mreg          (idexe_inst2_mreg       ),
         .inst2_exe2id_w2regdata     (exe_inst2_alu_result   ),
 	    .inst2_mem2id_wa      	    (exemem_inst2_wa        ),
-	    .inst2_mem2id_wreg    	    (exemem_w2regdata       ),
+	    .inst2_mem2id_wreg    	    (exemem_inst2_wreg       ),
         .inst2_mem2id_mreg    	    (exemem_inst2_mreg      ),
         .inst2_mem2id_w2regdata     (exemem_inst2_w2regdata ),
 
         .inst2_wreg_i               (wb_inst2_wreg          ),
         .inst2_wa_i                 (wb_inst2_wa            ),
         .inst2_w2regdata_i          (wb_inst2_w2regdata     ),
+        .pc_exccode                 (ifid_pc_exccode),
 
+// out 
+        .inst1_src1_o               (id_inst1_src1          ),
+        .inst1_src2_o               (id_inst1_src2          ),
+        .inst1_DCU_memtype_o 		(id_inst1_DCU_memtype   ),
+        .inst1_DCU_mreg_o   		(id_inst1_DCU_mreg      ),
+        .inst1_DCU_whilo_o 		    (id_inst1_DCU_whilo     ),
+        .inst1_DCU_wreg_o  		    (id_inst1_DCU_wreg      ),
+        .inst1_DCU_alutype_o		(id_inst1_DCU_alutype   ),
+        .inst1_DCU_aluop_o		    (id_inst1_DCU_aluop     ),
+        .inst1_wa_o                 (id_inst1_wa            ),
 
- 
+        .inst2_src1_o               (id_inst2_src1          ),
+        .inst2_src2_o               (id_inst2_src2          ),
+        .inst2_DCU_memtype_o 		(id_inst2_DCU_memtype   ),
+        .inst2_DCU_mreg_o   		(id_inst2_DCU_mreg      ),
+        .inst2_DCU_whilo_o 		    (id_inst2_DCU_whilo     ),
+        .inst2_DCU_wreg_o  		    (id_inst2_DCU_wreg      ),
+        .inst2_DCU_alutype_o		(id_inst2_DCU_alutype   ),
+        .inst2_DCU_aluop_o		    (id_inst2_DCU_aluop     ),
+        .inst2_wa_o                 (id_inst2_wa            ),
 
-        .pc_exccode         (ifid_pc_exccode),
+        .inst1_w2ramdata            (id_inst1_w2ramdata),
 
-        .inst1_DCU_memtype 		(id_inst1_DCU_memtype ),
-        .inst1_DCU_mreg   		(id_inst1_DCU_mreg  ),
-        .inst1_DCU_whilo 		(id_inst1_DCU_whilo ),
-        .inst1_DCU_wreg  		(id_inst1_DCU_wreg),
-        .inst1_DCU_alutype		(id_inst1_DCU_alutype),
-        .inst1_DCU_aluop		(id_inst1_DCU_aluop ),
-
-        .inst2_DCU_memtype 		(id_inst2_DCU_memtype ),
-        .inst2_DCU_mreg   		(id_inst2_DCU_mreg  ),
-        .inst2_DCU_whilo 		(id_inst2_DCU_whilo ),
-        .inst2_DCU_wreg  		(id_inst2_DCU_wreg),
-        .inst2_DCU_alutype		(id_inst2_DCU_alutype),
-        .inst2_DCU_aluop		(id_inst2_DCU_aluop ),
-
-        .inst1_wa_o             (id_inst1_wa  ),
-        .inst2_wa_o             (id_inst2_wa  ),
-        .inst1_src1_o           (id_inst1_src1),
-        .inst1_src2_o           (id_inst1_src2),
-        .inst2_src1_o           (id_inst2_src1),
-        .inst2_src2_o           (id_inst2_src2),
-
-        .inst1_w2ramdata        (id_inst1_w2ramdata),
-
-        .pc_plus8_o			(id_pc_plus8_o  ),
-        .DCU_jtsel			(id_jtsel       ),
+        .iaddr1p8_o			(id_pc_plus8_o  ),
+        .inst1_DCU_jtsel_o	(id_jtsel       ),
         .jmp_addr1_o		(id_jmp_addr1_o ),
         .jmp_addr2_o		(id_jmp_addr2_o ),
         .jmp_addr3_o		(id_jmp_addr3_o ),
@@ -405,7 +405,10 @@ module MiniMIPS32(
         .cp0addr            (id_cp0addr     ),
         .ov_enable          (id_ov_enable   ),
         .id_exccode         (id_exccode     ),
-        .next_delay         (id_next_delay  )
+        .next_delay         (id_next_delay  ),
+
+        .issue_mode         (id_issue_mode  ),
+        .jmp_take           (id_jmp_take    )
     );
 
     idexe_reg idexe_reg0(
@@ -433,7 +436,7 @@ module MiniMIPS32(
         .id_inst2_aluop			    (id_inst2_DCU_aluop     ),
         .id_inst2_src1			    (id_inst2_src1          ),
         .id_inst2_src2			    (id_inst2_src2          ),
-        .id_inst2_wa   			    (wb_inst2_wa            ),
+        .id_inst2_wa   			    (id_inst2_wa            ),
         .id_inst2_w2ramdata 	    (id_inst2_w2ramdata     ),
         .id_iaddr2				    (id_iaddr2              ), 
         .id_iaddr2_p8			    (id_iaddr2_p8           ),       

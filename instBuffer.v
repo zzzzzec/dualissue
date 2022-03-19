@@ -10,12 +10,13 @@ module instBuffer(
 
     input re,
     input we,
+    input wire[1:0] issue_mode,
 
 
-    output reg[`INST_BUS] inst1,
-    output reg[`INST_BUS] inst2,
-    output reg[`INST_BUS] iaddr1,
-    output reg[`INST_BUS] iaddr2,
+    output wire[`INST_BUS] inst1,
+    output wire[`INST_BUS] inst2,
+    output wire[`INST_BUS] iaddr1,
+    output wire[`INST_BUS] iaddr2,
     
     output wire instBufferFull
 );
@@ -26,15 +27,15 @@ reg[`INST_ADDR_BUS] addrBuffer[ `INST_BUFFER_SIZE - 1 : 0];
 
 reg[`ISNT_BUFFER_SIZElog2 - 1 : 0] head;
 reg[`ISNT_BUFFER_SIZElog2 - 1 : 0] tail;
-
-
+wire[`ISNT_BUFFER_SIZElog2 - 1 : 0] headp1 = head + 1;
+wire[`ISNT_BUFFER_SIZElog2 - 1 : 0] headp2 = head + 2;
+wire[`ISNT_BUFFER_SIZElog2 - 1 : 0] tailp1 = tail + 1;
 // one more bit 
 reg[`ISNT_BUFFER_SIZElog2 : 0] bufferContentLen;
 wire bufferFull;
 wire bufferEmpty;
 wire instNumberMoreThan2;
 
-wire issue_mode;
 
 assign bufferFull = bufferContentLen == `INST_BUFFER_SIZE ? 1'b1 : 1'b0;
 assign bufferEmpty = bufferContentLen == 0 ? 1'b1 : 1'b0;
@@ -46,6 +47,13 @@ assign writeEnable = we & ~(bufferFull);
 assign readEnable = re & instNumberMoreThan2;
 assign instBufferFull = bufferFull;
 
+
+
+assign inst1 = readEnable ? instBuffer[head] : 0;
+assign inst2 = readEnable ? instBuffer[headp1] : 0;
+assign iaddr1 = readEnable ? addrBuffer[head] : 0;
+assign iaddr2 = readEnable ? addrBuffer[headp1] : 0;
+
 integer i;
 always@(posedge clk) begin
     if(resetn == `RST_ENABLE | flush ) begin
@@ -54,7 +62,7 @@ always@(posedge clk) begin
             addrBuffer[i] <= `ZERO_WORD;
         end
         bufferContentLen <= 0;
-        head <= 0;
+        head <= 0 - 2;
         tail <= 0;
     end
     else begin
@@ -62,59 +70,37 @@ always@(posedge clk) begin
         if(writeEnable) begin   
             instBuffer[tail] <= inst_i;
             addrBuffer[tail] <= iaddr_i; 
-            tail <= tail + 1;
+            tail <= tailp1;
         end
 
         if(readEnable) begin
-            if (issue_mode == `DUAL_ISSUE) begin
-                inst1 <= instBuffer[head];
-                inst2 <= instBuffer[head + 1];
-                iaddr1 <= addrBuffer[head];
-                iaddr2 <= addrBuffer[head + 1];
-                head <= head + 2;
-            end
-            else begin
-                inst1 <= instBuffer[head];
-                inst2 <= 0;
-                iaddr1 <= addrBuffer[head];
-                iaddr2 <= 0;
-                head <= head + 1;
-            end
+            case(issue_mode)
+                `INIT_ISSUE : begin end
+                `DUAL_ISSUE : head <= headp2;
+                `SINGLE_ISSUE: head <= headp1;
+                default: begin end
+            endcase
         end 
-        else begin
-            inst1 <= 0;
-            inst2 <= 0;
-            iaddr1 <= 0;
-            iaddr2 <= 0;
-        end
 
         // count logic 
         case({writeEnable, readEnable}) 
             2'b01: begin
-                bufferContentLen <= bufferContentLen - 2;
+                if(issue_mode == `DUAL_ISSUE )
+                    bufferContentLen <= bufferContentLen - 2;
+                else 
+                    bufferContentLen <= bufferContentLen - 1;
             end
             2'b10: begin
                 bufferContentLen <= bufferContentLen + 1;
             end
             2'b11: begin
-                bufferContentLen <= bufferContentLen - 1;
+                if(issue_mode == `DUAL_ISSUE )
+                    bufferContentLen <= bufferContentLen - 1;
             end
             default: begin end
         endcase
     end
 
 end
-
-wire[`INST_BUS] inst1_check;
-wire[`INST_BUS] inst2_check;
-
-assign inst1_check = instBuffer[head];
-assign inst2_check = instBuffer[head + 1];
-
-issue issue0(
-    .inst1          (inst1_check),
-    .inst2          (inst2_check),
-    .issue_mode     (issue_mode)
-);
 
 endmodule

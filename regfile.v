@@ -25,6 +25,7 @@ module regfile(
 	output reg   [`REG_BUS 	   ] inst2_rd2,
 	input  wire 			     inst2_re2
     );
+	reg debug_conflict;
 
 	reg [`REG_BUS] 	regs[0:`REG_NUM-1];
 	integer i; 
@@ -33,10 +34,12 @@ module regfile(
 			for(i = 0; i < `REG_NUM - 1; i = i + 1) begin
 				regs[i] <= 0; 
 			end
+			debug_conflict <= 0;
 		end
 		else begin
 			if ((inst1_we & inst2_we ==  `WRITE_ENABLE) && (inst1_wa == inst2_wa ) && inst1_wa != 0) begin
 				regs[inst1_wa] <= inst1_w2regdata; // it should be not
+				debug_conflict <= 1;
 			end
 			else begin
 				if(inst1_we == `WRITE_ENABLE &&  inst1_wa != 0) begin

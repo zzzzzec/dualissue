@@ -4,15 +4,19 @@
 `define SRC1_MEM_RELATIVE 	      	((mem2id_mreg == `TRUE_V) && (rreg1 == `TRUE_V) && (rs == mem2id_wa) && (mem2id_mreg == `TRUE_V))
 `define SRC2_EXE_RELATIVE  			((exe2id_mreg == `TRUE_V) && (rreg2 == `TRUE_V) && (rt == exe2id_wa) && (exe2id_mreg == `TRUE_V))
 `define SRC2_MEM_RELATIVE         	((mem2id_mreg == `TRUE_V) && (rreg2 == `TRUE_V) && (rt == mem2id_wa) && (mem2id_mreg == `TRUE_V))
-								
 module DCU(
 	input  wire   					resetn,
-	input wire [`REG_ADDR_BUS]		exe2id_wa,
-	input wire						exe2id_wreg,
-	input wire                      exe2id_mreg,
-	input wire [`REG_ADDR_BUS] 		mem2id_wa,
-	input wire 						mem2id_wreg,
-	input wire                      mem2id_mreg,
+
+	input wire [`REG_ADDR_BUS]		inst1_exe2id_wa,
+	input wire						inst1_exe2id_wreg,
+	input wire [`REG_ADDR_BUS] 		inst1_mem2id_wa,
+	input wire 						inst1_mem2id_wreg,
+
+	input wire [`REG_ADDR_BUS]		inst2_exe2id_wa,
+	input wire						inst2_exe2id_wreg,
+	input wire [`REG_ADDR_BUS] 		inst2_mem2id_wa,
+	input wire 						inst2_mem2id_wreg,
+
 	input wire[`REG_BUS]			reg_rs,
 	input wire[`REG_ADDR_BUS]  		rs,
 	input wire[`REG_ADDR_BUS] 		rt, 
@@ -21,8 +25,8 @@ module DCU(
 	input wire  		  			equ,
 
     output wire[7:0]               	memtype,
-	output wire[1:0] 				fwrd2,
-	output wire[1:0]				fwrd1,
+	output wire[`DUC_fwrd_BUS] 		fwrd2,
+	output wire[`DUC_fwrd_BUS]		fwrd1,
 	output wire[1:0] 		    	whilo,
 	output wire						wreg,
 	output wire[2:0] 				alutype,
@@ -43,7 +47,11 @@ module DCU(
 	output wire[1:0]				rwc0,
 	output wire						ov_enable,
 	output wire[`EXC_CODE_BUS]		id_exccode,
-	output wire  					next_delay
+	output wire  					next_delay,
+	
+	output wire 					issue_mult_div,
+	output wire  					issue_jmp_branch,
+	output wire 					issue_load_store
 );
 
 wire 			inst_add_out;
@@ -273,18 +281,36 @@ DCU_step2 DCU_step20(
 	.next_delay (next_delay		),
 	.RI 		(RI				)
 	);
+
+	// rule: 1. wb > mem > exe
+	//       2. inst2 > inst1
+	// choose from inst1_exe, inst2_exe, inst1_mem, inst2_mem, reg 			
 	//读寄存器端口1可能的数据来源
-	assign fwrd1 = 	(exe2id_wreg == `WRITE_ENABLE  && exe2id_wa == rs && rreg1 == `READ_ENABLE  && exe2id_wa != 0 	) ? 2'b01:
-					(mem2id_wreg == `WRITE_ENABLE  && mem2id_wa == rs && rreg1 == `READ_ENABLE && mem2id_wa != 0 	) ? 2'b10:
-					(rreg1 == `READ_ENABLE) ?  2'b11 : 2'b00;   
 
-	assign fwrd2 = 	(exe2id_wreg == `WRITE_ENABLE  	&& exe2id_wa == rt && rreg2 == `READ_ENABLE && exe2id_wa != 0 ) ? 2'b01:
-					(mem2id_wreg == `WRITE_ENABLE  	&& mem2id_wa == rt && rreg2 == `READ_ENABLE && mem2id_wa != 0 ) ? 2'b10:
-					(rreg2 == `READ_ENABLE) ?  2'b11 : 2'b00;   
+	assign fwrd1 =	(inst2_mem2id_wreg == `WRITE_ENABLE  && inst2_mem2id_wa == rs && rreg1 == `READ_ENABLE  && inst2_mem2id_wa != 0 ) ? `DCU_fwrd_inst2_mem :
+				 	(inst1_mem2id_wreg == `WRITE_ENABLE  && inst1_mem2id_wa == rs && rreg1 == `READ_ENABLE  && inst1_mem2id_wa != 0 ) ? `DCU_fwrd_inst1_mem :
+					(inst2_exe2id_wreg == `WRITE_ENABLE  && inst2_exe2id_wa == rs && rreg1 == `READ_ENABLE  && inst2_exe2id_wa != 0 ) ? `DCU_fwrd_inst2_exe :
+					(inst1_exe2id_wreg == `WRITE_ENABLE  && inst1_exe2id_wa == rs && rreg1 == `READ_ENABLE  && inst1_exe2id_wa != 0 ) ? `DCU_fwrd_inst1_exe :
+					(rreg1 == `READ_ENABLE) ?  `DCU_fwrd_no : 0;   
 
-	assign stallreq_id = (resetn == `RST_ENABLE) ?  `PIPELINE_NOSTOP :
-									 (`SRC1_EXE_RELATIVE || `SRC1_MEM_RELATIVE || `SRC2_EXE_RELATIVE || `SRC2_MEM_RELATIVE) ? 
-									 `PIPELINE_STOP : `PIPELINE_NOSTOP;
+	assign fwrd2 =	(inst2_mem2id_wreg == `WRITE_ENABLE  && inst2_mem2id_wa == rs && rreg2 == `READ_ENABLE  && inst2_mem2id_wa != 0 ) ? `DCU_fwrd_inst2_mem :
+				 	(inst1_mem2id_wreg == `WRITE_ENABLE  && inst1_mem2id_wa == rs && rreg2 == `READ_ENABLE  && inst1_mem2id_wa != 0 ) ? `DCU_fwrd_inst1_mem :
+					(inst2_exe2id_wreg == `WRITE_ENABLE  && inst2_exe2id_wa == rs && rreg2 == `READ_ENABLE  && inst2_exe2id_wa != 0 ) ? `DCU_fwrd_inst2_exe :
+					(inst1_exe2id_wreg == `WRITE_ENABLE  && inst1_exe2id_wa == rs && rreg2 == `READ_ENABLE  && inst1_exe2id_wa != 0 ) ? `DCU_fwrd_inst1_exe :
+					(rreg2 == `READ_ENABLE) ?  `DCU_fwrd_no : 0;   
+
+	//assign stallreq_id = 			(resetn == `RST_ENABLE) ?  `PIPELINE_NOSTOP :
+	//								 (`SRC1_EXE_RELATIVE || `SRC1_MEM_RELATIVE || `SRC2_EXE_RELATIVE || `SRC2_MEM_RELATIVE) ? 
+	//								 `PIPELINE_STOP : `PIPELINE_NOSTOP;
+
 	assign memtype = { inst_sw_out,inst_sh_out,inst_sb_out,inst_lw_out,inst_lhu_out,inst_lh_out,inst_lbu_out,inst_lb_out };
 	
+	assign issue_mult_div 	= 	inst_mult_out | inst_multu_out | inst_div_out | inst_divu_out;
+
+	assign issue_jmp_branch = 	inst_j_out | inst_jal_out | inst_jr_out | inst_jalr_out |
+								inst_beq_out | inst_bne_out | inst_bgez_out | inst_bgtz_out | inst_blez_out |
+							 	inst_bltz_out | inst_bgezal_out | inst_bltzal_out;
+								 
+	assign issue_load_store = 	inst_lb_out | inst_lbu_out | inst_lh_out | inst_lhu_out | inst_lw_out |
+								inst_sb_out | inst_sh_out  | inst_sw_out;
 endmodule	

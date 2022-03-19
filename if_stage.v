@@ -13,28 +13,23 @@ module if_stage (
 
     input   wire                    instBufferFull,
 
-    output  wire                    ice,
-    output  reg  [`INST_ADDR_BUS]   pc_plus4_o,             
+    output  wire                    ice,           
     output 	wire [`INST_ADDR_BUS]	iaddr,
-    output  wire [`INST_BUS     ]   pc_o,
-    output  wire [`EXC_CODE_BUS ]   pc_exccode
+    output  wire [`EXC_CODE_BUS ]   pc_exccode,
+    output  wire                    we
 );
 
     reg  [`INST_ADDR_BUS] 	    pc;
-    reg  [`INST_ADDR_BUS]       pc_next; 
     wire [`INST_ADDR_BUS]       pc_plus4 = pc + 4;
-    assign pc_o = pc;
-    always @(*) begin
-        pc_plus4_o = pc_plus4;
-        case(jtsel_i)
-            2'b00 : pc_next = pc_plus4;
-            2'b01:  pc_next = jmp_addr1_i;
-            2'b10:  pc_next = jmp_addr3_i;
-            2'b11:  pc_next = jmp_addr2_i;
-        endcase
-    end
+    reg  ce;
+    reg  ib_we;
+    assign we = ib_we;
 
-    reg ce;
+    wire jmp_take = jtsel_i[0] | jtsel_i[1];
+
+    assign  iaddr  = pc;
+    assign  pc_exccode = (`WORD_NOT_ALIGN(pc)) ? `EXC_AdEL : `EXC_NONE;
+
     always @(posedge clk) begin
 		if (resetn == `RST_ENABLE) begin
 			ce <= `CHIP_DISABLE;		
@@ -48,20 +43,28 @@ module if_stage (
                     (~`WORD_NOT_ALIGN(pc)) &&
                     (~instBufferFull)) ? ce : 1'b0;
     
+
     always @(posedge clk) begin
         if (resetn == `RST_ENABLE ) begin
-            pc <= `PC_INIT;                 
+            pc <= `PC_INIT;
+            ib_we <= 1;                 
         end
         else begin
             if(flush) begin
                 pc <= cp0_excaddr;
             end
             else if(stall[0] == `PIPELINE_NOSTOP) begin
-                pc <= pc_next;                 
+                    if(jmp_take)    ib_we <= 0;
+                    else ib_we      <= 1;
+
+                    case(jtsel_i)
+                        2'b00 : pc <= pc_plus4;
+                        2'b01:  pc <= jmp_addr1_i;
+                        2'b10:  pc <= jmp_addr3_i;
+                        2'b11:  pc <= jmp_addr2_i;
+                    endcase               
             end
         end
     end
-    
-    assign  iaddr  = pc;
-    assign  pc_exccode = (`WORD_NOT_ALIGN(pc)) ? `EXC_AdEL : `EXC_NONE;
+
 endmodule
